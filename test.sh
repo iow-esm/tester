@@ -39,7 +39,7 @@ mkdir -p ${main_dir}
 
 if [ -d $src ]; then
     echo "Synchronize contents from ${version}/* to ${main_dir}/"
-    rsync -avz --exclude "test" --exclude ".git" `realpath ${src}`/* `realpath ${main_dir}`/ --delete
+    rsync -avz --exclude "tester" --exclude ".git" `realpath ${src}`/* `realpath ${main_dir}`/ --delete
     cd ${main_dir}
 else
     echo "Create main directory ${main_dir}"
