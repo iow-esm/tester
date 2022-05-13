@@ -83,7 +83,7 @@ class TestReporter:
                     model = model_output.split("/")[-1].split("_")[0]
                     results_dir = model_output.split("/output/")[-1].replace("/", "_")
                     fig_dir = self.report_dir+"/output/figures_"+setup+"/"+model
-                    found_plots = glob.glob(self.test_dir+"/"+setup+"/postprocess/"+model+"/plot*/results/"+results_dir+"/*")
+                    found_plots = glob.glob(self.test_dir+"/"+setup+"/postprocess/"+model+"/plot*/results/"+results_dir+"/*.png")
                     if not found_plots:
                         continue
 
