@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# TODO factor out module loading 
 module load miniconda3
 # necessary steps for first time
 #conda create --name jupyterbook
@@ -7,7 +8,7 @@ conda activate jupyterbook
 #conda install -c conda-forge jupyter-book
 
 # clean last build
-rm -r _build/docs _build/.doctrees _build/jupyter_execute autoapi
+rm -r _build/docs _build/.doctrees
 
 # build _toc.yml
 python3 get_files.py

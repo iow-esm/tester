@@ -1,5 +1,5 @@
 IOW_ESM/
 report/_build
 report/*.md
-report/*/*.md
+report/*/*
 report/_toc.yml

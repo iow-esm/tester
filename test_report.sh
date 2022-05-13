@@ -12,9 +12,10 @@ if [ -z $src ] || [ -z ${main_dir} ] || [ -z $machine ] || [ -z $user_at_host ] 
     exit
 fi
 
+# TODO factor out module loading
 module load anaconda3
 python3 test_report.py ${test_dir} "$setups"
 
-cd report
-
-./build_report.sh
+# TODO comment in when everything is ready
+#cd report
+#./build_report.sh

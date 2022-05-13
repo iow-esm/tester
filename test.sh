@@ -78,3 +78,8 @@ for setup in `awk '{print $1}' SETUPS`; do
         echo "  Run setup $setup"
         ./run.sh ${machine}_${setup}
 done
+
+# TODO
+# wait for for jobs to be finished (however this could be done)
+# and then
+# ./test_report.sh ${test_config}
