@@ -46,8 +46,13 @@ else
 
     cd ${main_dir}
 
-    echo "Get main repository from https://git.io-warnemuende.de/iow_esm/main.git"
-    git clone --branch $src https://git.io-warnemuende.de/iow_esm/main.git .
+    if [ -d .git ]; then
+        echo "Update main repository from https://git.io-warnemuende.de/iow_esm/main.git"
+        git pull https://git.io-warnemuende.de/iow_esm/main.git $src
+    else
+        echo "Get main repository from https://git.io-warnemuende.de/iow_esm/main.git"
+        git clone --branch $src https://git.io-warnemuende.de/iow_esm/main.git .
+    fi
 
     echo "Get all other reposirtories"
     ./clone_origins.sh
@@ -79,6 +84,16 @@ for setup in `awk '{print $1}' SETUPS`; do
         ./run.sh ${machine}_${setup}
 done
 
+# while  [ ${finished} -lt `wc -l SETUPS` ]; do
+#     let finished=0
+#     for setup in `awk '{print $1}' SETUPS`; do
+#         marker=`ssh -t ${user_at_host} "if [ -f ${test_dir}/${setup}/*_finished.txt ]; then echo ${setup}; fi"`
+#         if [ "$marker" == "$setup" ]; then
+#             let finished++
+#         fi
+#     done
+#     sleep 10
+# done
 # TODO
 # wait for for jobs to be finished (however this could be done)
 # and then
