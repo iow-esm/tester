@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [ $# -eq 1 ]; then
 	test_config=$1
 else

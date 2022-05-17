@@ -83,7 +83,7 @@ class TestReporter:
                     model = model_output.split("/")[-1].split("_")[0]
                     results_dir = model_output.split("/output/")[-1].replace("/", "_")
                     fig_dir = self.report_dir+"/output/figures_"+setup+"/"+model
-                    found_plots = glob.glob(self.test_dir+"/"+setup+"/postprocess/"+model+"/plot*/results/"+results_dir+"/*.png")
+                    found_plots = glob.glob(self.test_dir+"/"+setup+"/postprocess/"+model+"/plot*/results/"+results_dir+"*/*.pdf")
                     if not found_plots:
                         continue
 
@@ -91,12 +91,20 @@ class TestReporter:
                     file.write("### Found figures for "+model+"\n\n")
 
                     for plot in found_plots:
-                        os.system("cp "+plot+" "+fig_dir+"/")
                         figure = plot.split("/")[-1]
+                        try:
+                            from pdf2image import convert_from_path
+                            print("Convert "+plot+" to png file")
+                            figure = figure.replace("pdf","png")
+                            pages = convert_from_path(plot, 300)
+                            for page in pages:
+                                page.save(fig_dir+"/"+figure,'PNG')
+                        except: 
+                            os.system("cp "+plot+" "+fig_dir+"/")
                         file.write("```{figure} ./figures_"+setup+"/"+model+"/"+figure+"\n")
                         file.write("---\n")
                         file.write("height: 500px\n")
-                        file.write("name: fig-"+figure.split(".png")[0]+"\n")
+                        file.write("name: fig-"+setup+"-"+model+"-"+figure+"\n")
                         file.write("---\n")
                         file.write(figure+"\n")
                         file.write("```\n\n")

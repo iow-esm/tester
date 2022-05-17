@@ -7,7 +7,7 @@ rm -r _build/docs _build/.doctrees
 python3 get_files.py
 
 # build book
-jupyter-book build -v --keep-going --all .
+jupyter-book build -v --keep-going --all --builder pdfhtml .
 
 # prepare folder for github-pages
 mv _build/html _build/docs
