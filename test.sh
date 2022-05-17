@@ -84,16 +84,17 @@ for setup in `awk '{print $1}' SETUPS`; do
         ./run.sh ${machine}_${setup}
 done
 
-# while  [ ${finished} -lt `wc -l SETUPS` ]; do
-#     let finished=0
-#     for setup in `awk '{print $1}' SETUPS`; do
-#         marker=`ssh -t ${user_at_host} "if [ -f ${test_dir}/${setup}/*_finished.txt ]; then echo ${setup}; fi"`
-#         if [ "$marker" == "$setup" ]; then
-#             let finished++
-#         fi
-#     done
-#     sleep 10
-# done
+let finished=0
+while  [ ${finished} -lt `cat ${main_dir}/SETUPS | wc -l` ]; do
+    let finished=0
+    for setup in `awk '{print $1}' SETUPS`; do
+        marker=`ssh -t ${user_at_host} "if [ -f ${test_dir}/${setup}/*_finished.txt ]; then echo ${setup}; fi"`
+        if [ "$marker" == "$setup" ]; then
+            let finished++
+        fi
+    done
+    sleep 10
+done
 # TODO
 # wait for for jobs to be finished (however this could be done)
 # and then

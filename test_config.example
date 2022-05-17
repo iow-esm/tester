@@ -20,3 +20,11 @@ setups="coupled_example mvkkarst@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/MOM
 CCLM_example mvkkarst@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/CCLM_Eurocordex/example_0.22deg/1.00.00
 MOM5_example mvkkarst@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic/example_8nm/1.00.00
 I2LM_example mvkkarst@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/I2LM_Eurocordex/example_ERAI_0.22deg/1.00.00"
+
+
+module load anaconda3
+# necessary steps for first time
+#conda create --name jupyterbook
+#conda activate jupyterbook
+#conda install -c conda-forge jupyter-book
+conda activate jupyterbook
