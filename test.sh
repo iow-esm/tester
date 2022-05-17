@@ -85,7 +85,7 @@ for setup in `awk '{print $1}' SETUPS`; do
 done
 
 let finished=0
-while  [ ${finished} -lt `cat ${main_dir}/SETUPS | wc -l` ]; do
+while  [ ${finished} -lt `cat SETUPS | wc -l` ]; do
     let finished=0
     for setup in `awk '{print $1}' SETUPS`; do
         marker=`ssh -t ${user_at_host} "if [ -f ${test_dir}/${setup}/*_finished.txt ]; then echo ${setup}; fi"`
