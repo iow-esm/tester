@@ -1,17 +1,17 @@
 #!/bin/bash
 
 # clean last build
-rm -r _build/docs _build/.doctrees
+rm -r _build/html _build/.doctrees
 
 # build _toc.yml
 python3 get_files.py
 
 # build book
 jupyter-book build -v --keep-going --all --builder pdfhtml .
+jupyter-book build -v --keep-going --all .
 
 # prepare folder for github-pages
-mv _build/html _build/docs
-touch _build/docs/.nojekyll
+touch _build/html/.nojekyll
 
 # using github pages:
 # created _build folder should be a git repository that should be pushed to https://github.com/sven-karsten/iow_esm.git
