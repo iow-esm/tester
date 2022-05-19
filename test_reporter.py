@@ -73,7 +73,7 @@ class TestReporter:
                     file.write("**Could not find output for "+setup+"**\n")
                     self.summary["Output:"+setup] = False
                 else:
-                    file.write("Output `"+str(found_output)+"` has been generated for "+setup+"\n")
+                    file.write("Output `"+str(found_output)+"` has been generated for "+setup+".\n")
                     self.summary["Output:"+setup] = True
 
                 file.write("\n")
@@ -84,11 +84,18 @@ class TestReporter:
                     results_dir = model_output.split("/output/")[-1].replace("/", "_")
                     fig_dir = self.report_dir+"/output/figures_"+setup+"/"+model
                     found_plots = glob.glob(self.test_dir+"/"+setup+"/postprocess/"+model+"/plot*/results/"+results_dir+"*/*.pdf")
+                    
                     if not found_plots:
                         continue
 
+                    file.write("### "+model+"\n\n")
+                    file.write(str(len(found_plots))+" figures have been generated for "+model+".\n\n")
+
+                    file.write("<details>\n\n")
+
                     os.system("mkdir -p "+fig_dir)
-                    file.write("### Found figures for "+model+"\n\n")
+
+                    found_plots = sorted(found_plots)
 
                     for plot in found_plots:
                         figure = plot.split("/")[-1]
@@ -110,6 +117,8 @@ class TestReporter:
                         file.write("```\n\n")
 
                         self.summary["Output:"+setup+":"+model+":"+figure] = True
+
+                    file.write("</details>\n\n")
 
                 file.write("\n\n")
     
