@@ -24,13 +24,11 @@ else
     test_config="./test_config.example"
 fi
 
-echo "Apply test config: set version, main_dir, machine, user_at_host, test_dir, setups."
+echo "Apply test config: set version, main_dir, destinations, setups."
 source ${test_config}
 
-echo $src ${main_dir} $machine $user_at_host $test_dir $setups
-
 echo "Check for mandatory settings and apply defaults."
-if [ -z $src ] || [ -z ${main_dir} ] || [ -z $machine ] || [ -z $user_at_host ] || [ -z $test_dir ] || [ "${#setups[@]}" -eq 0 ]; then
+if [ -z "$src" ] || [ -z "${main_dir}" ] || [ -z "${destination}" ] || [ "${#setups[@]}" -eq 0 ]; then
     echo "Some mandatory variable is not correctly set in $test_config"
     exit
 fi
@@ -38,7 +36,7 @@ fi
 mkdir -p ${main_dir}
 
 if [ -d $src ]; then
-    echo "Synchronize contents from ${version}/* to ${main_dir}/"
+    echo "Synchronize contents from ${src} to ${main_dir}/"
     rsync -avz --exclude "tester" --exclude ".git" `realpath ${src}`/* `realpath ${main_dir}`/ --delete
     cd ${main_dir}
 else
@@ -56,45 +54,66 @@ else
 
     echo "Get all other reposirtories"
     ./clone_origins.sh
-fi     
+fi    
 
-echo "Register the base destination ${machine}_base ${user_at_host}:${test_dir}/base"
-echo "${machine}_base ${user_at_host}:${test_dir}/base" > DESTINATIONS
+echo "Register the configured destination"
+echo "${destination}" > DESTINATIONS
 
-echo "Build the components..."
-./build.sh ${machine}_base
-echo "done."
+for keyword in `awk '{if(NR==1){print $1}}' ./DESTINATIONS` ; do
 
-echo "$setups" > SETUPS
+    source ./local_scripts/identify_target.sh ${keyword}
 
-echo "Run all the given test setups..."
-for setup in `awk '{print $1}' SETUPS`; do
+    echo ${target} ${dest} ${dest_folder} ${user_at_dest}
+
+    echo "Register base directory for all setups."
+    echo "${target}_base ${dest}/base" >> DESTINATIONS
+
+    echo "Build the components..."
+    ./build.sh ${target}_base
+    echo "done."
+
+    echo "$setups" > SETUPS
+
+    echo "Run all the given test setups..."
+    for setup in `awk '{print $1}' SETUPS`; do
 
         echo "  Prepare work directory for setup $setup."
-        ssh -t ${user_at_host} "if [ -d ${test_dir}/${setup} ]; then rm -r ${test_dir}/${setup}; fi"
-        ssh -t ${user_at_host} "cp -as ${test_dir}/base ${test_dir}/${setup}"
+        ssh -t ${user_at_dest} "if [ -d ${dest_folder}/${setup} ]; then rm -r ${dest_folder}/${setup}; fi"
+        ssh -t ${user_at_dest} "cp -as ${dest_folder}/base ${dest_folder}/${setup}"
 
         echo "  Register specific destination."
-        echo "${machine}_${setup} ${user_at_host}:${test_dir}/${setup}" >> DESTINATIONS
+        echo "${target}_${setup} ${dest}/${setup}" >> DESTINATIONS
 
         echo "  Deploy test setup $setup"
-        ./deploy_setups.sh ${machine}_${setup} ${setup}
+        ./deploy_setups.sh ${target}_${setup} ${setup}
+
+        dirs=(`ssh ${user_at_dest} "if [ -d ${dest_folder}/${setup}/input ]; then ls ${dest_folder}/${setup}/input; fi"`)
+        if [[ "${dirs[*]}" =~ "global_settings.py" ]]; then 
+            dirs=("")
+        fi
 
         echo "  Run setup $setup"
-        ./run.sh ${machine}_${setup}
+        for d in "${dirs[@]}"; do 
+            echo "   with input folder $d"
+            ./run.sh ${target}_${setup} prepare-before-run $d
+        done
+    done
+
 done
 
 let finished=0
 while  [ ${finished} -lt `cat SETUPS | wc -l` ]; do
     let finished=0
     for setup in `awk '{print $1}' SETUPS`; do
-        marker=`ssh -t ${user_at_host} "if [ -f ${test_dir}/${setup}/*_finished.txt ]; then echo -n ${setup}; fi"`
+        marker=`ssh -t ${user_at_dest} "if [ -f ${dest_folder}/${setup}/*_finished.txt ]; then echo -n ${setup}; fi"`
         if [ "$marker" == "$setup" ]; then
             let finished++
         fi
     done
     sleep 10
 done
+
+exit
 
 cd -
 ./test_report.sh ${test_config}

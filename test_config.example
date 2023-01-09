@@ -9,20 +9,16 @@ src=".."
 # Note that if src is not an existing directory it is assumed to be a branch name
 
 # user-specific settings
-# machine keyword
-machine="hlrng"
-# your user name and host name corresponding to machine name
-user_at_host="mvkkarst@glogin"
-# directory where the tests will be done on the target machine
-test_dir="/scratch/usr/mvkkarst/test_area"
+
+# destination
+destination="hlrnb mvkkarst@blogin:/scratch/usr/mvkkarst/test_area"
+
 # setups that will be tested in format of the usual SETUPS file
-setups="coupled_example mvkkarst@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic-CCLM_Eurocordex/example_8nm_0.22deg/1.00.00
-CCLM_example mvkkarst@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/CCLM_Eurocordex/example_0.22deg/1.00.00
-MOM5_example mvkkarst@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic/example_8nm/1.00.00
-I2LM_example mvkkarst@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/I2LM_Eurocordex/example_ERAI_0.22deg/1.00.00"
+setups="parallel_example mvkkarst@blogin:/scratch/usr/mviowmod/IOW_ESM/setups/example/1.00.00
+single_example mvkkarst@blogin:/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic-CCLM_Eurocordex/example_3nm_0.22deg/1.00.00"
 
 
-module load anaconda3
+module load miniconda3
 # necessary steps for first time
 #conda create --name jupyterbook
 #conda activate jupyterbook
