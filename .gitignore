@@ -3,3 +3,4 @@ report/_build
 report/*.md
 report/*/*
 report/_toc.yml
+log.txt
