@@ -11,7 +11,7 @@ for path, subdirs, files in os.walk(root):
     for name in files:
         if name == "intro.md":
             continue
-        if ".ipynb" in name or ".md" in name or ".rst" in name:
+        if ".md" in name or ".rst" in name:
             print(name)
             currentFile = str(pathlib.PurePath(path, name))
             toc.append(currentFile)

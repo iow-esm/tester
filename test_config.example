@@ -1,3 +1,5 @@
+from_scratch=true
+
 # directory where the code will be stored (can be relative to the directory where the test.sh script is)
 main_dir="./IOW_ESM"
 
@@ -10,12 +12,15 @@ src=".."
 
 # user-specific settings
 
-# destination
-destination="hlrnb mvkkarst@blogin:/scratch/usr/mvkkarst/test_area"
-
 # setups that will be tested in format of the usual SETUPS file
-setups="parallel_example mvkkarst@blogin:/scratch/usr/mviowmod/IOW_ESM/setups/example/1.00.00
-single_example mvkkarst@blogin:/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic-CCLM_Eurocordex/example_3nm_0.22deg/1.00.00"
+setups="hlrng_example mvkkarst@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/example/1.00.00
+hlrnb_example mvkkarst@blogin:/scratch/usr/mviowmod/IOW_ESM/setups/example/1.00.00"
+
+# destination
+destination="hlrng mvkkarst@glogin:/scratch/usr/mvkkarst/test_area
+hlrnb mvkkarst@blogin:/scratch/usr/mvkkarst/test_area
+phy-10_hlrng_example_sync karsten@phy-10:/silod8/karsten/test_area/hlrng_sync
+phy-10_hlrnb_example_sync karsten@phy-10:/silod8/karsten/test_area/hlrnb_sync"
 
 
 module load miniconda3

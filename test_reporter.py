@@ -1,22 +1,39 @@
 import glob
 import os
+import subprocess
+
+class Logger:
+    def __init__(self, directory, file_name, parent = None, overwrite = True):
+        self.directory = directory
+        self.file_name = file_name
+        self.parent = parent
+        if glob.glob(self.directory) and overwrite:
+            os.system("rm -r "+self.directory)
+        os.system("mkdir -p "+self.directory)
+        self.file_path = self.directory+'/'+self.file_name
+
+        if overwrite:
+            self.file = open(self.file_path, "w")
+        else:
+            self.file = open(self.file_path, "a")
+
+        if self.parent is not None:
+            self.parent.report_files.append(self.file_path)
+    
+    def log(self, text):
+        self.file.write(text)
+
+    def __del__(self):
+        self.file.close()
 
 class TestReporter:
 
-    def __init__(self, test_dir, setups, report_dir = "./report"):
+    def __init__(self, target, dest, setups, report_dir = "./report"):
 
-        self.test_dir = test_dir
+        self.target = target
+        self.dest = dest
         self.report_dir = report_dir
         self.setups = setups
-
-        self.intro_file_name = self.report_dir + "/intro.md"
-        with open(self.intro_file_name, "w") as file:
-            file.write("# IOW ESM test report\n\n")
-
-            file.write("This is an IOW ESM test report.\n")
-            file.write("The tes thas been performed in `"+test_dir+"` with the setups `"+str(setups)+"`.\n")
-            file.write("\n\n")
-
 
         self.binaries = {
             "components/CCLM" : ["cclm/bin_PRODUCTION/lmparbin"],
@@ -27,117 +44,139 @@ class TestReporter:
         }
 
         self.summary = {}
+        self.report_files = []
+
+        self.user_at_host, self.host_path = self.dest.split(":")
+
+        self.summary_logger = Logger(self.report_dir, "intro.md", self, overwrite=False)
+        self.summary_logger.log("\n\n## Test summary for "+self.target+"\n\n")
+
+        print("# Reporter for "+self.target+" started.")
+
+    def _glob_remote(self, pattern):
+        cmd = "ssh "+self.user_at_host+" \"ls "+pattern+" 2> /dev/null\""
+        sp = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+        output = sp.stdout.read().decode("utf-8").split("\n")
+        return [i for i in output if i != ""]      
 
     def check_build(self):
 
-        build_report_dir = self.report_dir+"/build"
-        if glob.glob(build_report_dir):
-            os.system("rm -r "+build_report_dir)
-        os.system("mkdir "+build_report_dir)
+        print("Check build...")
 
-        check_build_file_name = build_report_dir+"/build.md"
-        with open(check_build_file_name, "w") as file:
-            file.write("# IOW ESM build report\n\n\n")
+        logger = Logger(self.report_dir+"/build_"+self.target, "build.md", self)
+        logger.log("# IOW ESM build report\n\n\n")
 
-            for component in self.binaries.keys():
-                file.write("## Build report for "+component+"\n\n")
+        for component in self.binaries.keys():
+            logger.log("## Build report for "+component+"\n\n")
 
-                found_binaries = []
-                for binary in self.binaries[component]:
-                    found_binaries += glob.glob(self.test_dir+"/base/"+component+"/"+binary)
-                
-                if not found_binaries:
-                    file.write("**Could not find binaries "+str(self.binaries[component])+" for "+component+"**\n")
-                    self.summary["Build:"+component] = False
-                else:
-                    file.write("Binaries `"+str(found_binaries)+"` has been built for "+component+"\n")
-                    self.summary["Build:"+component] = True
+            found_binaries = []
 
-                file.write("\n\n")
+            for binary in self.binaries[component]:
+                found_binaries = self._glob_remote(self.host_path+"/base/"+component+"/"+binary)
+            
+            if not found_binaries:
+                logger.log("**Could not find binaries "+str(self.binaries[component])+" for "+component+"**\n")
+                self.summary["Build:"+component] = False
+            else:
+                logger.log("Binaries `"+str(found_binaries)+"` has been built for "+component+"\n")
+                self.summary["Build:"+component] = True
+
+            logger.log("\n\n")
+
+        print("...done.")
 
     def check_output(self):
-        output_report_dir = self.report_dir+"/output"
-        if glob.glob(output_report_dir):
-            os.system("rm -r "+output_report_dir)
-        os.system("mkdir "+output_report_dir)
 
+        print("Check output...")
 
-        check_output_file_name = output_report_dir+"/output.md"
-        with open(check_output_file_name, "w") as file:
-            file.write("# IOW ESM output report\n\n\n")
-            for setup in self.setups:
-                file.write("## Output report for "+setup+"\n\n")
+        logger = Logger(self.report_dir+"/output_"+self.target, "output.md", self)
+        logger.log("# IOW ESM output report\n\n\n")
 
-                found_output = glob.glob(self.test_dir+"/"+setup+"/output/*")
+        for setup in self.setups:
+
+            if self.target not in setup:
+                continue
+
+            print(" Check setup "+setup+"...")
+
+            input_folders = self._glob_remote("-d "+self.host_path+"/"+setup+"/input/*/ | grep -v ^_")
+
+            if input_folders == []:
+                input_folders = self._glob_remote(self.host_path+"/"+setup+"/input/global_settings.py")
+                if input_folders == []:
+                    continue
+
+                input_folders = [""]
+
+            for input_folder in input_folders:
+                print("  Check output for input folder "+input_folder+"...")
+                if input_folder != "" and input_folder[-1] == "/":
+                    input_folder = input_folder[:-1] 
+                input_folder = input_folder.split("/")[-1]
+
+                logger.log("## Output report for `"+setup+"` and input folder `"+input_folder+"`\n\n")
+
+                found_output = self._glob_remote(self.host_path+"/"+setup+"/output/"+input_folder)
                 if not found_output:
-                    file.write("**Could not find output for "+setup+"**\n")
-                    self.summary["Output:"+setup] = False
+                    logger.log("**Could not find output for "+setup+" and input folder `"+input_folder+"`**\n")
+                    self.summary["Output:"+setup+":"+input_folder] = False
                 else:
-                    file.write("Output `"+str(found_output)+"` has been generated for "+setup+".\n")
-                    self.summary["Output:"+setup] = True
+                    logger.log("Output `"+str(found_output)+"` has been generated for "+setup+" and input folder `"+input_folder+"`.\n")
+                    self.summary["Output:"+setup+":"+input_folder] = True
 
-                file.write("\n")
+                logger.log("\n")
 
-                model_outputs = glob.glob(self.test_dir+"/"+setup+"/output/*/*")
+                model_outputs = self._glob_remote("-d "+self.host_path+"/"+setup+"/output/"+input_folder+"/*")
+
                 for model_output in model_outputs:
-                    model = model_output.split("/")[-1].split("_")[0]
-                    results_dir = model_output.split("/output/")[-1].replace("/", "_")
-                    fig_dir = self.report_dir+"/output/figures_"+setup+"/"+model
-                    found_plots = glob.glob(self.test_dir+"/"+setup+"/postprocess/"+model+"/plot*/results/"+results_dir+"*/*.pdf")
                     
-                    if not found_plots:
+                    if model_output[-1] == "/":
+                        model_output = model_output[:-1]
+                                                    
+                    model = model_output.split("/")[-1].split("_")[0]
+
+                    print("   Check model "+model+"...")
+                    results_dir = model_output.split("/output/")[-1].replace("/", "_")
+                    found_report = self._glob_remote(self.host_path+"/"+setup+"/postprocess/"+model+"/create_validation_report/results/"+results_dir+"*/validation_report.md")                      
+                    
+                    print("   ...done.")
+                    if not found_report:
                         continue
 
-                    file.write("### "+model+"\n\n")
-                    file.write(str(len(found_plots))+" figures have been generated for "+model+".\n\n")
+                    validation_report_dir = self.report_dir+"/output_"+self.target+"/"+input_folder+"/"+model
 
-                    file.write("<details>\n\n")
+                    os.system("mkdir -p "+validation_report_dir)
+                    cmd = "scp -r "+self.dest+"/"+setup+"/postprocess/"+model+"/create_validation_report/results/"+results_dir+"*/* "+validation_report_dir
+                    sp = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
 
-                    os.system("mkdir -p "+fig_dir)
+                    logger.log("### "+model+"\n\n")
+                    logger.log("Validation report has been generated for "+model+".\n\n")
 
-                    found_plots = sorted(found_plots)
-
-                    for plot in found_plots:
-                        figure = plot.split("/")[-1]
-                        try:
-                            from pdf2image import convert_from_path
-                            print("Convert "+plot+" to png file")
-                            figure = figure.replace("pdf","png")
-                            pages = convert_from_path(plot, 300)
-                            for page in pages:
-                                page.save(fig_dir+"/"+figure,'PNG')
-                        except: 
-                            os.system("cp "+plot+" "+fig_dir+"/")
-                        file.write("```{figure} ./figures_"+setup+"/"+model+"/"+figure+"\n")
-                        file.write("---\n")
-                        file.write("height: 500px\n")
-                        file.write("name: fig-"+setup+"-"+model+"-"+figure+"\n")
-                        file.write("---\n")
-                        file.write(figure+"\n")
-                        file.write("```\n\n")
-
-                        self.summary["Output:"+setup+":"+model+":"+figure] = True
-
-                    file.write("</details>\n\n")
-
-                file.write("\n\n")
+                logger.log("\n\n")
+                print("  ...done.")
+            print(" ...done.")
+        print("...done.")
     
     def write_summary(self):
+        print("Write summary...")
+
         failed = 0
-        with open(self.intro_file_name, "a") as file:
-            file.write("## Summary\n\n")
+        self.summary_logger.log("| checkpoint       | success  |\n")
+        self.summary_logger.log("|---               |---       |\n")
+        for checkpoint in self.summary.keys():
+            self.summary_logger.log("|"+checkpoint+"|`"+str(self.summary[checkpoint])+"`|\n")
 
-            file.write("| checkpoint       | success  |\n")
-            file.write("|---               |---       |\n")
-            for checkpoint in self.summary.keys():
-                file.write("|"+checkpoint+"|`"+str(self.summary[checkpoint])+"`|\n")
+            if not self.summary[checkpoint]:
+                failed += 1
 
-                if not self.summary[checkpoint]:
-                    failed += 1
+        if failed > 0:
+            self.summary_logger.log("### Failure\n\n")
+            self.summary_logger.log("\n"+str(failed)+" checkpoints failed!\n")
+        else:
+            self.summary_logger.log("### Success\n\n")
+            self.summary_logger.log("\n<span style=\"color:green\">All checkpoints succeeded!</span>\n")
 
-            if failed > 0:
-                file.write("## Failure\n\n")
-                file.write("\n"+str(failed)+" checkpoints failed!\n")
-            else:
-                file.write("## Success\n\n")
-                file.write("\n<span style=\"color:green\">All checkpoints succeeded!</span>\n")
+        print("...done.")
+
+    def __del__(self):
+        print("# Reporter for "+self.target+" finished.")
