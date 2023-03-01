@@ -12,6 +12,7 @@ jupyter-book build -v --keep-going --all .
 
 # prepare folder for github-pages
 touch _build/html/.nojekyll
+mv _build/html _build/docs
 
 # using github pages:
 # created _build folder should be a git repository that should be pushed to https://github.com/sven-karsten/iow_esm.git
