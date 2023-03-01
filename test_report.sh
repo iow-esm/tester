@@ -43,9 +43,18 @@ cat <<EOF > report/intro.md
 # IOW ESM test report
 
 This is an IOW ESM test report.
-The test thas been performed in `${run_targets[@]}`.
+The test thas been performed on \`${run_targets[@]}\`.
 
 EOF
+
+# remove old reporter outputs
+if [ `ls -d report/build_*/ | wc -l` != 0 ]; then
+    rm -r report/build_*/
+fi
+
+if [ `ls -d report/output_*/ | wc -l` != 0 ]; then
+    rm -r report/output_*/
+fi
 
 for run_target in "${run_targets[@]}"; do
 

@@ -1,3 +1,5 @@
+# if from_scratch is true, main_dir will be reoved before the test and on the target a rebuild is triggered,
+# thus nothing locally and remotely is prepared 
 from_scratch=true
 
 # directory where the code will be stored (can be relative to the directory where the test.sh script is)
