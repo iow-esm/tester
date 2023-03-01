@@ -40,7 +40,7 @@ fi
 if ${from_scratch}; then
     if [ -d "${main_dir}" ]; then
         echo "Remove existing ${main_dir}"
-        rm -r ${main_dir}
+        rm -rf ${main_dir}
     fi
 fi
 mkdir -p ${main_dir}
