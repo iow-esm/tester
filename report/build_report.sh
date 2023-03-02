@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # clean last build
-rm -r _build/html _build/.doctrees
+rm -r _build/docs _build/.doctrees
 
 # build _toc.yml
 python3 get_files.py
