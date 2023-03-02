@@ -72,5 +72,5 @@ cd report
 source ./build_report.sh
 
 for d in `ls -d  output_*/*/*/figures`; do
-    cp -r $d _build/html/$d
+    cp -r $d _build/docs/$d
 done
