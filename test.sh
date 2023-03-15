@@ -193,7 +193,8 @@ while [ ${finished} -lt ${total_runs} ]; do
                 continue
             fi
 
-            if [ ! -z ${setup}_done ]; then
+            done=${setup}_done
+            if [ ${!done} == true ]; then
                 continue
             fi
 
