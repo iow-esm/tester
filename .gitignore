@@ -4,3 +4,4 @@ report/*.md
 report/*/*
 report/_toc.yml
 log.txt
+__pycache__/
