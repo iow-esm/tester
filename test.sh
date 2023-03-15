@@ -179,6 +179,7 @@ done
 
 echo "Waiting for test jobs to finish..."
 
+#TODO: this loop stops too early if more than one target is involved
 let finished=0
 while [ ${finished} -lt ${total_runs} ]; do
 
@@ -192,7 +193,7 @@ while [ ${finished} -lt ${total_runs} ]; do
                 continue
             fi
 
-            if [ ! -z ${setup_done} ]; then
+            if [ ! -z ${setup}_done ]; then
                 continue
             fi
 
