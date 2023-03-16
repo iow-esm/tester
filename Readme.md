@@ -20,6 +20,7 @@ The results of a test are summarized in a jupyter book that you can find under
 Just open it in a browser of your choice.
 
 With `report/publish.sh` the test result may also be published to github repository with enavled github pages.
+This is currently existing under https://sven-karsten.github.io/iow_esm.test/intro.html.
 
 
 # Authors

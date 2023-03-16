@@ -194,7 +194,7 @@ while [ ${finished} -lt ${total_runs} ]; do
             fi
 
             done=${setup}_done
-            if [ ${!done} == true ]; then
+            if [ "${!done}" == true ]; then
                 continue
             fi
 
