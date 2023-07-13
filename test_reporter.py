@@ -148,6 +148,7 @@ class TestReporter:
                     os.system("mkdir -p "+validation_report_dir)
                     cmd = "scp -r "+self.dest+"/"+setup+"/postprocess/"+model+"/create_validation_report/results/"+results_dir+"*/* "+validation_report_dir
                     sp = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+                    sp.wait()
 
                     logger.log("### "+model+"\n\n")
                     logger.log("Validation report has been generated for "+model+".\n\n")
