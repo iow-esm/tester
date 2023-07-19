@@ -137,7 +137,7 @@ class TestReporter:
 
                     print("   Check model "+model+"...")
                     results_dir = model_output.split("/output/")[-1].replace("/", "_")
-                    found_report = self._glob_remote(self.host_path+"/"+setup+"/postprocess/"+model+"/create_validation_report/results/"+results_dir+"*/validation_report.md")                      
+                    found_report = self._glob_remote(self.host_path+"/"+setup+"/postprocess/"+model+"/create_validation_report/results/*"+results_dir+"*/validation_report.md")                      
                     
                     print("   ...done.")
                     if not found_report:
