@@ -146,7 +146,7 @@ class TestReporter:
                     validation_report_dir = self.report_dir+"/output_"+self.target+"/"+input_folder+"/"+model
 
                     os.system("mkdir -p "+validation_report_dir)
-                    cmd = "scp -r "+self.dest+"/"+setup+"/postprocess/"+model+"/create_validation_report/results/"+results_dir+"*/* "+validation_report_dir
+                    cmd = "scp -r "+self.dest+"/"+setup+"/postprocess/"+model+"/create_validation_report/results/*"+results_dir+"*/* "+validation_report_dir
                     sp = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
                     sp.wait()
 
